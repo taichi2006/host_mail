@@ -1,7 +1,7 @@
 <%@ include file="includes/header.html" %>
 
 <h1>Thanks for joining our email list</h1>
-
+<h3 style="color: red;">${errorMessage}</h3>
 <p>Here is the information that you entered:</p>
 
 <label>Email:</label>
