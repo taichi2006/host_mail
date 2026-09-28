@@ -17,20 +17,21 @@ public class MailUtil {
                                 boolean bodyIsHTML)
             throws MessagingException {
 
-        // 1 - Configure Gmail SMTP over SSL
+        // 1 - Configure Gmail SMTP over STARTTLS (Chuẩn dành cho Cloud/Render)
         Properties props = new Properties();
-        props.setProperty("mail.transport.protocol", "smtps");
-        props.setProperty("mail.smtps.host", "smtp.gmail.com");
-        props.setProperty("mail.smtps.port", "465");
-        props.setProperty("mail.smtps.auth", "true");
-        props.setProperty("mail.smtps.ssl.checkserveridentity", "true");
-        props.setProperty("mail.smtps.connectiontimeout", "10000");
-        props.setProperty("mail.smtps.timeout", "10000");
-        props.setProperty("mail.smtps.writetimeout", "10000");
+        props.setProperty("mail.transport.protocol", "smtp"); // Đổi từ smtps sang smtp
+        props.setProperty("mail.smtp.host", "smtp.gmail.com"); // Đổi tất cả tiền tố smtps thành smtp
+        props.setProperty("mail.smtp.port", "587"); // Sử dụng cổng 587
+        props.setProperty("mail.smtp.auth", "true");
+        props.setProperty("mail.smtp.starttls.enable", "true"); // Bắt buộc để mã hóa qua cổng 587
+        props.setProperty("mail.smtp.ssl.checkserveridentity", "true");
+        props.setProperty("mail.smtp.connectiontimeout", "10000");
+        props.setProperty("mail.smtp.timeout", "10000");
+        props.setProperty("mail.smtp.writetimeout", "10000");
 
         Session session = Session.getInstance(props);
 
-        // 2 - Validate the sender
+// 2 - Validate the sender
         if (from == null || from.isBlank()) {
             from = GMAIL_USERNAME;
         }
@@ -40,7 +41,7 @@ public class MailUtil {
                     "The sender address must match GMAIL_USERNAME.");
         }
 
-        // 3 - Create the message with UTF-8
+// 3 - Create the message with UTF-8
         MimeMessage message = new MimeMessage(session);
         message.setFrom(new InternetAddress(GMAIL_USERNAME));
         message.setRecipient(
@@ -57,17 +58,18 @@ public class MailUtil {
         message.saveChanges();
 
         // 4 - Send and close the connection automatically
-        try (Transport transport = session.getTransport("smtps")) {
+        try (Transport transport = session.getTransport("smtp")) {
             transport.connect(
                     "smtp.gmail.com",
                     GMAIL_USERNAME,
-                    GMAIL_PASSWORD.replace(" ", "")
+                    GMAIL_PASSWORD.replace(" ", "") // Đảm bảo App Password 16 chữ cái không có dấu cách
             );
 
             transport.sendMessage(
                     message,
                     message.getAllRecipients()
             );
+
         }
     }
 }
