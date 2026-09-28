@@ -7,10 +7,10 @@ import jakarta.mail.internet.*;
 public class MailUtil {
 
     private static final String GMAIL_USERNAME =
-            "ngtduy4240@gmail.com";
+            "haohan123ajaja@gmail.com";
 
     private static final String GMAIL_PASSWORD =
-            "vfkk jtdg ynhp kwlm";
+            "zcgj mvjx hzbu xvkh";
 
     public static void sendMail(String to, String from,
                                 String subject, String body,
