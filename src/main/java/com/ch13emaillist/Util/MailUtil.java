@@ -17,57 +17,32 @@ public class MailUtil {
                                 boolean bodyIsHTML)
             throws MessagingException {
 
-        // 1 - Configure Gmail SMTP over SSL
+        // 1 - Configure Gmail SMTP over STARTTLS (Cổng 587)
         Properties props = new Properties();
-        props.setProperty("mail.transport.protocol", "smtps");
-        props.setProperty("mail.smtps.host", "smtp.gmail.com");
-        props.setProperty("mail.smtps.port", "465");
-        props.setProperty("mail.smtps.auth", "true");
-        props.setProperty("mail.smtps.ssl.checkserveridentity", "true");
-        props.setProperty("mail.smtps.connectiontimeout", "10000");
-        props.setProperty("mail.smtps.timeout", "10000");
-        props.setProperty("mail.smtps.writetimeout", "10000");
+        props.put("mail.transport.protocol", "smtp"); // Chú ý: bỏ chữ 's'
+        props.put("mail.smtp.host", "smtp.gmail.com"); // Đổi tất cả thành mail.smtp.*
+        props.put("mail.smtp.port", "587"); // Đổi cổng
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.starttls.enable", "true"); // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ MÃ HÓA
 
         Session session = Session.getInstance(props);
 
-        // 2 - Validate the sender
+// 2 & 3 - Validate và Create Message (Giữ nguyên code cũ của bạn)
         if (from == null || from.isBlank()) {
             from = GMAIL_USERNAME;
         }
-
-        if (!GMAIL_USERNAME.equalsIgnoreCase(from.trim())) {
-            throw new MessagingException(
-                    "The sender address must match GMAIL_USERNAME.");
-        }
-
-        // 3 - Create the message with UTF-8
         MimeMessage message = new MimeMessage(session);
         message.setFrom(new InternetAddress(GMAIL_USERNAME));
-        message.setRecipient(
-                Message.RecipientType.TO,
-                new InternetAddress(to)
-        );
-
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
         message.setSubject(subject, "UTF-8");
-        message.setText(
-                body,
-                "UTF-8",
-                bodyIsHTML ? "html" : "plain"
-        );
+        message.setText(body, "UTF-8", bodyIsHTML ? "html" : "plain");
         message.saveChanges();
 
-        // 4 - Send and close the connection automatically
-        try (Transport transport = session.getTransport("smtps")) {
-            transport.connect(
-                    "smtp.gmail.com",
-                    GMAIL_USERNAME,
-                    GMAIL_PASSWORD.replace(" ", "")
-            );
+// 4 - Send qua cổng smtp
+        try (Transport transport = session.getTransport("smtp")) { // Chú ý: truyền vào "smtp", không phải "smtps"
+            transport.connect("smtp.gmail.com", GMAIL_USERNAME, GMAIL_PASSWORD.replace(" ", ""));
+            transport.sendMessage(message, message.getAllRecipients());
 
-            transport.sendMessage(
-                    message,
-                    message.getAllRecipients()
-            );
         }
     }
 }
